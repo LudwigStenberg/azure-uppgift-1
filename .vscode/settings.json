@@ -3,5 +3,11 @@
   "azureFunctions.projectLanguage": "C#",
   "azureFunctions.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
-  "azureFunctions.preDeployTask": "publish (functions)"
+  "azureFunctions.preDeployTask": "publish (functions)",
+  "files.exclude": {
+    "**/*.rpyc": true,
+    "**/*.rpa": true,
+    "**/*.rpymc": true,
+    "**/cache/": true
+  }
 }
