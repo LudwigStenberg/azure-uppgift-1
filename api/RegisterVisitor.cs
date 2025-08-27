@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -15,9 +17,15 @@ public class RegisterVisitor
     }
 
     [Function("RegisterVisitor")]
-    public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
     {
         logger.LogInformation("C# HTTP trigger function processed a request.");
-        return new OkObjectResult("Welcome to Azure Functions!");
+
+        string? name = req.Query["name"];
+
+
+        return !string.IsNullOrEmpty(name)
+            ? new OkObjectResult($"Hello {name}") :
+           new BadRequestObjectResult("Please pass a name on the query string!");
     }
 }
