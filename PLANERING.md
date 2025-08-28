@@ -33,9 +33,9 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 #### Frontend (HTML/CSS/JS)
 
-- [ ] Skapa formulär som låter en användare registrera ett besök
-- [ ] Koppla funktionalitet till registreringen av besök med en fetch() som kontaktar API:t / Azure Functions URL
-- [ ] Ge output tillbaka till användaren för att bekräfta besöket
+- [x] Skapa formulär som låter en användare registrera ett besök
+- [x] Koppla funktionalitet till registreringen av besök med en fetch() som kontaktar API:t / Azure Functions URL
+- [x] Ge output tillbaka till användaren för att bekräfta besöket
 
 #### Deploya / Integrera
 
@@ -43,6 +43,10 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [ ] Skapa Static Web App på Azure och deploya.
 - [ ] Testa och utforska Application Insights loggning och eventuella inställningar(?)
 - [ ] Testa det fullständiga systemet
+
+#### Loggning
+
+- [ ] Lägga in loggning där det passar in.
 
 ---
 
@@ -144,7 +148,16 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Skapade en form med submit button
 - La till event-listener för submit + preventDefault
 - Skapade en POST fetch metod för att skicka 'firstName' till min azure function.
-- Stötte på CORS-Origin restriction.
+- Stötte på CORS-Origin restriction vid lokal testning. Eftersom addressen och porten skiljer sig mellan min API (azure function) och html (eg live server eller fileURL), så stöter jag på CORS restriction.
+- Löste det genom att gå in i local.settings.json och lägga till "Host" "CORS": "\*" för att tillåta alla. Tror det alternativet är helt okej när det handlar om local development. Men man bör nog vara mer försiktig i produktion.
+- La till ett responseMessage när besökaren registrear, beroende på success eller failure.
+
+#### Datum
+
+- Försöker komma ihåg hur jag converterar UTCdatumet i JavaScript men lyckas inte få det som jag vill..återkommer..
+- Testade toLocaleString, date.parse utan succé men det verkar som JavaScript inte förstår att det var utc och därmed testade jag lägga till ett 'z' som suffix som ska representera detta och då fungerade det.
+- Jag upptäckte att det hade troligen varit smartare om man använt DateTimeOffset som datatyp istället för DateTime så att man slapp konkatenera och lägga till ett "Z" i frontend. Funderar på att fixa det men det hade inneburit: schema change i databasen och att uppdatera VisitorModel.
+- Använde .ToLocaleString med optional parameters för att justera displayen av strängen för användaren.
 
 ### Mina resurser:
 
@@ -162,3 +175,9 @@ https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-v
 
 Manage Function App (CORS)
 https://learn.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=azure-portal%2Cto-premium#cors
+
+CORS
+https://stackoverflow.com/questions/43767255/cors-with-azure-function-from-localhost-not-cli
+
+CORS
+https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-csharp

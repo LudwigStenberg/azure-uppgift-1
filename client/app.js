@@ -1,4 +1,5 @@
 const form = document.getElementById("registration-form");
+const responseMessage = document.getElementById("response-message");
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -28,7 +29,22 @@ async function registerVisit(firstName) {
 
     const result = await response.json();
     console.log(result);
+    console.log(result.timestamp);
+
+    const utcTimestamp = result.timestamp + "Z";
+    const localDate = new Date(utcTimestamp);
+
+    responseMessage.innerText = `Welcome, ${
+      result.firstName
+    }.\nYou checked in at: ${localDate.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })}`;
   } catch (error) {
     console.error(error.message);
+    responseMessage.innerText = `There was an error registering your visit. Please try again.`;
   }
 }

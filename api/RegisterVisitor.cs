@@ -55,6 +55,7 @@ public class RegisterVisitor
                 }
             }
         }
+        logger.LogInformation(newVisitor.Timestamp.ToString());
 
         logger.LogInformation("Request Body: {RequestBody}", requestBody);
         logger.LogInformation("Visit made by: {Name}", firstName);
