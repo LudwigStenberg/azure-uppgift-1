@@ -29,12 +29,12 @@ public class RegisterVisitor
         string? firstName = node?["firstName"]?.ToString();
 
         VisitorModel? newVisitor = null;
-        using var connection = new SqlConnection(Environment.GetEnvironmentVariable("SqlConnectionString"));
+        await using var connection = new SqlConnection(Environment.GetEnvironmentVariable("SqlConnectionString"));
         {
 
             var query = @"INSERT INTO Visitors (FirstName) 
-                                OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
-                                VALUES (@firstName)";
+                        OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
+                        VALUES (@firstName)";
 
             await connection.OpenAsync();
 
@@ -44,7 +44,6 @@ public class RegisterVisitor
 
             using (var reader = await command.ExecuteReaderAsync())
             {
-
                 if (await reader.ReadAsync())
                 {
                     newVisitor = new VisitorModel
@@ -61,15 +60,13 @@ public class RegisterVisitor
         logger.LogInformation("Visit made by: {Name}", firstName);
         logger.LogInformation("newVisitor retrieved from query: {NewVisitor}", newVisitor);
 
-        // Hantera return 
         if (newVisitor == null)
         {
-            logger.LogInformation("newVisitor is null and request should return with a failure code.");
+            return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
 
         return new OkObjectResult(newVisitor);
 
-        // TODO - RETURN FAILURE CODE..
 
 
 

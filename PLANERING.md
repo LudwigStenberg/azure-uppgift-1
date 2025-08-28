@@ -26,9 +26,10 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [x] Skapa min Azure SQL Database
 - [x] Hämta min connection sträng från min SQL Database i portalen
 - [x] Skapa min entity/model för besökare (eg. VisitorModel: Id, Name, Timestamp)
-- [ ] Testa databasanslutning lokalt (via local.settings.json?)
-- [ ] Spara requests/besökare till databasen
-- [ ] Returnera nödvändig info till klienten
+- [x] Testa databasanslutning lokalt (via local.settings.json?)
+- [x] Spara requests/besökare till databasen
+- [x] Returnera nödvändig info till klienten
+- [ ] Lägg till nödvändig loggning
 
 #### Frontend (HTML/CSS/JS)
 
@@ -115,14 +116,35 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 #### SQL Database operation
 
 - Hämtar och skapar connection - sträng hämtad från local.settings.json via GetEnvironmentVariable
+
 - Skapat min query string för mitt kommando
+
 - La till en OUTPUT clause för att i samma operation hämta värdena för mitt nyskapade Visitor-objekt.
+
 - Öppnade anslutningen (eller, hämtade från .NETs connection pool)
+
 - Skapat mitt command som fått info om: query-strängen och min connection
-- Hanterar SQL Injection genom command.Parameters så att det inte finns manipulerbara variabler i query-strängen.
+
+- Hanterar SQL Injection genom command.Parameters så att det inte finns manipulerbara variabler i
+  query-strängen.
+
 - Eftersom vi får tillbaka mer än ett värde och i detta fall värdet från 3 kolumner kommer jag att använda mig av ExecuteReaderAsync().
+
 - GetInt32, GetString osv tar inte emot namnen på kolumner och behöver istället index-värdet som representerar det. Därmed använder jag mig av GetOrdinal-metoden för att hämta ut dessa index för att sen kunna använad dem i konstruktionen av newVisitor.
+
 - Jag valde att kalla på GetOrdinal direkt i property assignment eg: `Id = reader.GetInt32(reader.GetOrdinal("Id"))` men om det hade varit flera entiteter och rader som hämtades så hade det inte varit optimalt eftersom reader.GetOrdinal hade behövts utföras inför varje look-up. Alternativet är att man hade kunnat spara och cacha dem ovanför i variabler. Men eftersom jag bara vill en rad och tre kolumner använder väljer jag det mer smidiga och "rena" alternativet.
+
+- Testade anslutning mellan servern och min SQL connection. Failure pga obehörig IP-address. Gick in på Azure Portal > Networking > Add Firewall rule och lade till min test-IP. Fungerade.
+
+- Skickade request med Bruno > Gick in i Query Editor och läste från Visitors - Ny data inlagd. Succé!
+
+#### Påbörjade frontend
+
+- Skapade index.html, app.js
+- Skapade en form med submit button
+- La till event-listener för submit + preventDefault
+- Skapade en POST fetch metod för att skicka 'firstName' till min azure function.
+- Stötte på CORS-Origin restriction.
 
 ### Mina resurser:
 
@@ -137,3 +159,6 @@ https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonnode?vie
 
 T-SQL
 https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17#t-sql-compliance-with-the-sql-standard
+
+Manage Function App (CORS)
+https://learn.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=azure-portal%2Cto-premium#cors
