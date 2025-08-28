@@ -1,11 +1,11 @@
-using System.Text.Json;
+using System.Data;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using Grpc.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace VisitorRegistration;
@@ -28,9 +28,50 @@ public class RegisterVisitor
         JsonNode? node = JsonNode.Parse(requestBody);
         string? firstName = node?["firstName"]?.ToString();
 
-        logger.LogInformation(requestBody);
-        logger.LogInformation("Visit made by: {Name}", firstName);
+        VisitorModel? newVisitor = null;
+        using var connection = new SqlConnection(Environment.GetEnvironmentVariable("SqlConnectionString"));
+        {
 
-        return firstName != null ? new OkResult() : new BadRequestObjectResult("Error during request.");
+            var query = @"INSERT INTO Visitors (FirstName) 
+                                OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
+                                VALUES (@firstName)";
+
+            await connection.OpenAsync();
+
+            var command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@firstName", firstName);
+
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+
+                if (await reader.ReadAsync())
+                {
+                    newVisitor = new VisitorModel
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                        Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"))
+                    };
+                }
+            }
+        }
+
+        logger.LogInformation("Request Body: {RequestBody}", requestBody);
+        logger.LogInformation("Visit made by: {Name}", firstName);
+        logger.LogInformation("newVisitor retrieved from query: {NewVisitor}", newVisitor);
+
+        // Hantera return 
+        if (newVisitor == null)
+        {
+            logger.LogInformation("newVisitor is null and request should return with a failure code.");
+        }
+
+        return new OkObjectResult(newVisitor);
+
+        // TODO - RETURN FAILURE CODE..
+
+
+
     }
 }

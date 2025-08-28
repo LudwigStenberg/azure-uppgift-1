@@ -23,9 +23,9 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 #### Integration av SQL Database
 
-- [] Skapa min Azure SQL Database
-- [ ] Hämta min connection sträng från min SQL Database i portalen
-- [ ] Skapa min entity/model för besökare (eg. VisitorModel: Id, Name, Timestamp)
+- [x] Skapa min Azure SQL Database
+- [x] Hämta min connection sträng från min SQL Database i portalen
+- [x] Skapa min entity/model för besökare (eg. VisitorModel: Id, Name, Timestamp)
 - [ ] Testa databasanslutning lokalt (via local.settings.json?)
 - [ ] Spara requests/besökare till databasen
 - [ ] Returnera nödvändig info till klienten
@@ -72,21 +72,68 @@ App Service Plan, Function App, Application Insights, Storage Account och Log An
 
 - Testat den ursprungliga koden med "get" för att se om det finns aktivitet när man kör dotnet run och skickar in ett namn som query string. Fungerar.
 
-HTTP-TRIGGER REQUEST
-'POST' REQUEST
-TA EMOT REQUEST I FORM AV EN JSON BODY
-LÄS IN TILL EN STRÄNG 'requestBody'
-DESERIALIZE TILL OBJEKT (VisitorModel)
-ÖPPNA EN ANSLUTNING TILL DATABAS
-SPARA DATA TILL DATABASEN MED QUERY
-STÄNG ANSLUTNING TILL DATABAS
-IF'SUCCESS' - RETURNERA DET SKAPADE OBJEKTET TILL FRONTEND
-IF 'FAILURE' - RETURNERA 400BR ELLER LIKNANDE
+- HTTP-TRIGGER REQUEST
+- 'POST' REQUEST
+- TA EMOT REQUEST I FORM AV EN JSON BODY
+- LÄS IN TILL EN STRÄNG 'requestBody'
+- DESERIALIZE TILL OBJEKT (VisitorModel)
+- ÖPPNA EN ANSLUTNING TILL DATABAS
+- SPARA DATA TILL DATABASEN MED QUERY
+- STÄNG ANSLUTNING TILL DATABAS (Using)
+- IF'SUCCESS' - RETURNERA DET SKAPADE OBJEKTET TILL FRONTEND
+- IF 'FAILURE' - RETURNERA 400BR ELLER LIKNANDE
 
 Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en property (firstName) i requesten så valde jag att testa JsonNode.Parse för att extrahera värdet av 'firstName'.
 
 - Har nu testat köra en POST request via Bruno lokalt med succé.
 
 - Skapat en SQL Databas på portalen och om jag förstår det rätt så kan jag lägga till dess ConnectionString i local.settings.json.
+- Valde LRS istället för GRS (billigare och jag behöver inte så avancerad backup)
 
--
+- Det verkar som jag behövde skapa en Server (logisk) för att hantera min SQL Database.
+
+- Valde SQL Authentication som autentiseringsmetod (går att ändra sen)
+
+- Jag var inte tillåten att logga in på min databas med min IP-address så jag la till den via Server > Networking > Public Access
+
+- Vägde alternativen mellan att skapa min databas-tabell "Visitors" i kod eller direkt i portalen. Jag gjorde det i portalen. Alltså i databasens 'Query Editor' och fick då testa på T-SQL vilket var ganska likt PSQL med några detaljskillnader.
+
+- Märkbara skillnader var T-SQLs IDENTITY(1,1) jämfört med PSQLs SERIAL för auto-incrementing och DATETIME2 + GETUTCDATE() för T-SQL.
+
+- Lade till nytt NuGet package: "dotnet add package Microsoft.Data.SqlClient"
+
+- Satte upp en SqlConnection och hämtade SqlConnectionString i local.settings.json vilket verkar hanteras som environment variables när det körs och därför enklare istället för att jag eg injectar IConfiguration och hämtar med GetConnectionString.
+
+- Just nu hämtar jag connection string direkt utan att checka för null. Nu vet jag att den kommer att vara populerad men jag bör nog lägga till en null-check i ett senare stadie.
+
+- Märkte att det var onödigt att skapa ett newVisitor objekt när jag ändå enbart kommer att skicka in FirstName via SQL-query. Tog bort. Jag lär däremot skapa ett när jag hämtar data från databasen för att returnera objektet till frontend.
+
+- Eftersom jag använder raw SQL och inte EF så får jag inte tillbaka min resurs från databasen när jag skapar en ny entitet. Jag kom fram till att jag ska använda en "Output clause" i min query så att jag hämtar datan för den resurs som skapas på samma gång, atomiskt. Vilket är säkrare än om jag hade använt mig av t.ex två stycken queries med en INSERT och en SELECT då det skulle kunna uppstå issues med concurrency/race-conditions då flera användare ex registrerar samtidigt.
+
+- Eftersom vi förväntar oss att få tillbaka data via vår query kommer jag därför att använda ExecuteReader() och inte ExecuteNonQuery().
+
+#### SQL Database operation
+
+- Hämtar och skapar connection - sträng hämtad från local.settings.json via GetEnvironmentVariable
+- Skapat min query string för mitt kommando
+- La till en OUTPUT clause för att i samma operation hämta värdena för mitt nyskapade Visitor-objekt.
+- Öppnade anslutningen (eller, hämtade från .NETs connection pool)
+- Skapat mitt command som fått info om: query-strängen och min connection
+- Hanterar SQL Injection genom command.Parameters så att det inte finns manipulerbara variabler i query-strängen.
+- Eftersom vi får tillbaka mer än ett värde och i detta fall värdet från 3 kolumner kommer jag att använda mig av ExecuteReaderAsync().
+- GetInt32, GetString osv tar inte emot namnen på kolumner och behöver istället index-värdet som representerar det. Därmed använder jag mig av GetOrdinal-metoden för att hämta ut dessa index för att sen kunna använad dem i konstruktionen av newVisitor.
+- Jag valde att kalla på GetOrdinal direkt i property assignment eg: `Id = reader.GetInt32(reader.GetOrdinal("Id"))` men om det hade varit flera entiteter och rader som hämtades så hade det inte varit optimalt eftersom reader.GetOrdinal hade behövts utföras inför varje look-up. Alternativet är att man hade kunnat spara och cacha dem ovanför i variabler. Men eftersom jag bara vill en rad och tre kolumner använder väljer jag det mer smidiga och "rena" alternativet.
+
+### Mina resurser:
+
+HTTP-Trigger
+https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=python-v2%2Cisolated-process%2Cnodejs-v4%2Cfunctionsv2&pivots=programming-language-csharp
+
+StreamReader
+https://learn.microsoft.com/en-us/dotnet/api/system.io.streamreader.readtoendasync?view=net-9.0
+
+JsonNode
+https://learn.microsoft.com/en-us/dotnet/api/system.text.json.nodes.jsonnode?view=net-9.0
+
+T-SQL
+https://learn.microsoft.com/en-us/sql/t-sql/language-reference?view=sql-server-ver17#t-sql-compliance-with-the-sql-standard
