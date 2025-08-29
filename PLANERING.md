@@ -48,6 +48,10 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 - [ ] Lägga in loggning där det passar in.
 
+#### Extra
+
+- [ ] Lösa hur jag hanterar access till min SQL Databas med en dynamisk IP
+
 ---
 
 ## Anteckningar och reflektioner
@@ -158,6 +162,17 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Testade toLocaleString, date.parse utan succé men det verkar som JavaScript inte förstår att det var utc och därmed testade jag lägga till ett 'z' som suffix som ska representera detta och då fungerade det.
 - Jag upptäckte att det hade troligen varit smartare om man använt DateTimeOffset som datatyp istället för DateTime så att man slapp konkatenera och lägga till ett "Z" i frontend. Funderar på att fixa det men det hade inneburit: schema change i databasen och att uppdatera VisitorModel.
 - Använde .ToLocaleString med optional parameters för att justera displayen av strängen för användaren.
+
+#### Deployment Function App
+
+- VSC Extension > Workspace > Function App > Deploy to Azure > Overwrite > RegisterVisitor dök upp i portalen. Success.
+- Det som gör att min Function App upptäcker min function är [Function("RegisterVisitor")] i koden, om jag hade flera av dessa hade den förmodligen registrerat flera functions i min Function App.
+- Eftersom jag använder Environment.GetEnvironmentVariable så bör jag nog använda mig av 'App Settings' i portalen och inte 'Connection String'.
+- Nu är min Function App deployed och Status = Running. Jag har nu en Default Domain: func-uppgift1.azurewebsites.net att testa mitt api med.
+- Testade endpointen med min public domän och först gavs det ett 500 error men jag gissar att detta är för att Function Appen eller databasen kanske var idle och det är väl egentligen detta som är en del av grejen med 'serverless'. Andra försöket fungerade och det gav 200 response.
+- När jag skulle logga in på min SQL Database tilläts inte min IP så jag gissar att den är dynamisk och skiftar med den internetleverantör jag har. Så behöver nog hitta en lösning på detta.
+
+---
 
 ### Mina resurser:
 

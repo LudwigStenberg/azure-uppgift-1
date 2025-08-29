@@ -12,10 +12,12 @@ form.addEventListener("submit", async (event) => {
 });
 
 async function registerVisit(firstName) {
-  const url = "http://localhost:7071/api/RegisterVisitor";
+  const localUrl = "http://localhost:7071/api/RegisterVisitor";
+  const publicUrl =
+    "http://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(publicUrl, {
       method: "POST",
       body: JSON.stringify({ firstName: firstName }),
       headers: {

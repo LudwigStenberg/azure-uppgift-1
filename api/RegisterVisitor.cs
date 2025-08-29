@@ -1,8 +1,5 @@
-using System.Data;
 using System.Text.Json.Nodes;
-using Grpc.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
@@ -55,8 +52,6 @@ public class RegisterVisitor
                 }
             }
         }
-        logger.LogInformation(newVisitor.Timestamp.ToString());
-
         logger.LogInformation("Request Body: {RequestBody}", requestBody);
         logger.LogInformation("Visit made by: {Name}", firstName);
         logger.LogInformation("newVisitor retrieved from query: {NewVisitor}", newVisitor);

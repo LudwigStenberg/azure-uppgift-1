@@ -1,18 +1,18 @@
 meta {
-  name: RegisterVisitor
+  name: RegisterVisitor public
   type: http
   seq: 1
 }
 
 post {
-  url: http://localhost:7071/api/RegisterVisitor
+  url: func-uppgift1.azurewebsites.net/api/RegisterVisitor
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "firstName": "Ludwig"
+    "firstName": "Malva"
   }
 }
 
