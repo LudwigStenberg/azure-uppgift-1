@@ -51,6 +51,7 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 #### Extra
 
 - [ ] Lösa hur jag hanterar access till min SQL Databas med en dynamisk IP
+- [ ] Komma på hur jag kan tillåta CORS mellan min Function App och github pages
 
 ---
 
@@ -172,7 +173,9 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Testade endpointen med min public domän och först gavs det ett 500 error men jag gissar att detta är för att Function Appen eller databasen kanske var idle och det är väl egentligen detta som är en del av grejen med 'serverless'. Andra försöket fungerade och det gav 200 response.
 - När jag skulle logga in på min SQL Database tilläts inte min IP så jag gissar att den är dynamisk och skiftar med den internetleverantör jag har. Så behöver nog hitta en lösning på detta.
 
----
+- Deployade till GitHub Pages och stötte på error: `Blocked loading mixed active content “http://func-uppgift1.azurewebsites.net/api/RegisterVisitor”` vilket jag löste genom att ändra min Function App URL från http till https.
+- Nästa steg är att se om jag kan fixa CORS - i min Function App hittade jag "CORS" under API-fliken och la till min origin: https://www.ludwigstenberg.github.io
+- Lyckades inte få det att fungera med CORS med min specifika origin. Istället skickade jag in '\*' som en tillfällig lösning för att tillåta ALLT.
 
 ### Mina resurser:
 

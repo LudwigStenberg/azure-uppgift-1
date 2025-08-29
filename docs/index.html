@@ -3,16 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <title>Register Visit</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Please register your visit!</h1>
-    <form id="registration-form">
-      <label for="firstName">First name:</label><br />
-      <input type="text" id="firstName" name="firstName" /><br />
-      <label for="firstName"></label>
-      <button type="submit">Submit</button>
-    </form>
-    <div id="response-message"></div>
+    <div id="registration-page">
+      <h1>Please register your visit!</h1>
+      <div id="form-container">
+      <form id="registration-form">
+        <label for="firstName"></label><br />
+        <input
+          type="text"
+          id="firstName"
+          name="firstName"
+          placeholder="Enter your first name"
+        /><br />
+        <label for="firstName"></label>
+        <button type="submit" id="button">Submit</button>
+      </form>
+      <div>
+      <div id="response-message"></div>
+    </div>
     <script src="app.js"></script>
   </body>
 </html>
