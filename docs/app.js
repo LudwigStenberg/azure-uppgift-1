@@ -14,7 +14,7 @@ form.addEventListener("submit", async (event) => {
 async function registerVisit(firstName) {
   const localUrl = "http://localhost:7071/api/RegisterVisitor";
   const publicUrl =
-    "http://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
+    "https://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
 
   try {
     const response = await fetch(publicUrl, {
