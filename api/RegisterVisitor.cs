@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -20,51 +21,72 @@ public class RegisterVisitor
     public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         logger.LogInformation("C# HTTP trigger function processed a request.");
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-        JsonNode? node = JsonNode.Parse(requestBody);
-        string? firstName = node?["firstName"]?.ToString();
-
-        VisitorModel? newVisitor = null;
-        await using var connection = new SqlConnection(Environment.GetEnvironmentVariable("SqlConnectionString"));
+        try
         {
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            logger.LogInformation($"Body: '{requestBody}' (Length: {requestBody.Length})");
 
-            var query = @"INSERT INTO Visitors (FirstName) 
-                        OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
-                        VALUES (@firstName)";
-
-            await connection.OpenAsync();
-
-            var command = new SqlCommand(query, connection);
-
-            command.Parameters.AddWithValue("@firstName", firstName);
-
-            using (var reader = await command.ExecuteReaderAsync())
+            if (string.IsNullOrWhiteSpace(requestBody))
             {
-                if (await reader.ReadAsync())
+                logger.LogWarning("FirstName is null or missing in request.");
+                return new BadRequestObjectResult(new { error = "Request body cannot be empty." });
+            }
+
+            JsonNode? node = JsonNode.Parse(requestBody);
+            string? firstName = node?["firstName"]?.ToString();
+
+            logger.LogInformation("Retrieving connection string...");
+            var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                logger.LogError("SqlConnectionString variable is invalid or not configured.");
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
+            logger.LogInformation("Successfully retrieved connection string, connecting to database...");
+
+            VisitorModel? newVisitor = null;
+
+            await using (var connection = new SqlConnection(connectionString))
+            {
+                string query = @"INSERT INTO Visitors (FirstName) 
+                                 OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
+                                 VALUES (@firstName)";
+
+                logger.LogInformation("Opening connection...");
+                await connection.OpenAsync();
+                logger.LogInformation("Connection opened.");
+
+                var command = new SqlCommand(query, connection);
+
+                command.Parameters.AddWithValue("@firstName", firstName);
+
+                logger.LogInformation("Attempting to read and execute SQL query.");
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    newVisitor = new VisitorModel
+                    if (await reader.ReadAsync())
                     {
-                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                        FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                        Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"))
-                    };
+                        newVisitor = new VisitorModel
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"))
+                        };
+                    }
                 }
+                logger.LogInformation("Successfully performed SQL query.");
+                return new OkObjectResult(newVisitor);
             }
         }
-        logger.LogInformation("Request Body: {RequestBody}", requestBody);
-        logger.LogInformation("Visit made by: {Name}", firstName);
-        logger.LogInformation("newVisitor retrieved from query: {NewVisitor}", newVisitor);
-
-        if (newVisitor == null)
+        catch (JsonException)
         {
+            logger.LogError("Failed parsing of JSON.");
+            return new BadRequestResult();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"An unexpected error occurred.");
             return new StatusCodeResult(StatusCodes.Status500InternalServerError);
         }
-
-        return new OkObjectResult(newVisitor);
-
-
-
-
     }
 }
