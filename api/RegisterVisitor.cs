@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
@@ -74,7 +75,8 @@ public class RegisterVisitor
                         };
                     }
                 }
-                logger.LogInformation("Successfully performed SQL query.");
+                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}' and Timestamp: {Timestamp}",
+                     newVisitor!.Id, newVisitor.FirstName, newVisitor.Timestamp);
                 return new OkObjectResult(newVisitor);
             }
         }
