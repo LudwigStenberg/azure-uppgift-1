@@ -1,4 +1,3 @@
-using System.Data.Common;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
@@ -21,21 +20,23 @@ public class RegisterVisitor
     [Function("RegisterVisitor")]
     public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
-        logger.LogInformation("C# HTTP trigger function processed a request.");
+        logger.LogInformation("Function started...");
 
         try
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            logger.LogInformation($"Body: '{requestBody}' (Length: {requestBody.Length})");
 
             if (string.IsNullOrWhiteSpace(requestBody))
             {
-                logger.LogWarning("FirstName is null or missing in request.");
+                logger.LogWarning("The body is null or missing in the request.");
                 return new BadRequestObjectResult(new { error = "Request body cannot be empty." });
             }
+            logger.LogInformation($"Request Body: {requestBody}");
 
             JsonNode? node = JsonNode.Parse(requestBody);
             string? firstName = node?["firstName"]?.ToString();
+            string? lastName = node?["lastName"]?.ToString();
+            string? emailAddress = node?["emailAddress"]?.ToString();
 
             logger.LogInformation("Retrieving connection string...");
             var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
@@ -50,9 +51,9 @@ public class RegisterVisitor
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                string query = @"INSERT INTO Visitors (FirstName) 
-                                 OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.Timestamp 
-                                 VALUES (@firstName)";
+                string query = @"INSERT INTO Visitors (FirstName, LastName, EmailAddress) 
+                                 OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.EmailAddress, INSERTED.Timestamp 
+                                 VALUES (@firstName, @lastName, @emailAddress)";
 
                 logger.LogInformation("Opening connection...");
                 await connection.OpenAsync();
@@ -61,6 +62,8 @@ public class RegisterVisitor
                 var command = new SqlCommand(query, connection);
 
                 command.Parameters.AddWithValue("@firstName", firstName);
+                command.Parameters.AddWithValue("@lastName", lastName);
+                command.Parameters.AddWithValue("@emailAddress", emailAddress);
 
                 logger.LogInformation("Attempting to read and execute SQL query.");
                 using (var reader = await command.ExecuteReaderAsync())
@@ -71,12 +74,14 @@ public class RegisterVisitor
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.GetString(reader.GetOrdinal("LastName")),
+                            EmailAddress = reader.GetString(reader.GetOrdinal("EmailAddress")),
                             Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"))
                         };
                     }
                 }
-                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}' and Timestamp: {Timestamp}",
-                     newVisitor!.Id, newVisitor.FirstName, newVisitor.Timestamp);
+                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}', LastName: {LatName}, EmailAddress: '{EmailAddress}' and Timestamp: {Timestamp}",
+                     newVisitor!.Id, newVisitor.FirstName, newVisitor.LastName, newVisitor.EmailAddress, newVisitor.Timestamp);
                 return new OkObjectResult(newVisitor);
             }
         }
