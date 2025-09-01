@@ -2,10 +2,10 @@
 
 ### Jag behöver:
 
-- [ ] Frontend - Static Web App HTML/JS
-- [ ] Backend - Azure Functions som kommunicerar med databasen
-- [ ] Databas - Mitt val: Azure SQL Database
-- [ ] Loggning - ILogger: Övervakning via Azures Application Insights
+- [x] Frontend - Static Web App HTML/JS --> GitHub Pages
+- [x] Backend - Azure Functions som kommunicerar med databasen
+- [x] Databas - Mitt val: Azure SQL Database
+- [x] Loggning - ILogger: Övervakning via Azures Application Insights
 
 ### Plan för utförande:
 
@@ -39,8 +39,8 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 #### Deploya / Integrera
 
-- [ ] Skapa Azure Functions på Azure och deploya.
-- [ ] Skapa Static Web App på Azure och deploya.
+- [x] Skapa Azure Functions på Azure och deploya.
+- [x] Skapa Static Web App på Azure och deploya (GitHub-pages)
 - [ ] Testa och utforska Application Insights loggning och eventuella inställningar(?)
 - [ ] Testa det fullständiga systemet
 
@@ -52,6 +52,9 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 - [ ] Lösa hur jag hanterar access till min SQL Databas med en dynamisk IP
 - [ ] Komma på hur jag kan tillåta CORS mellan min Function App och github pages
+- [ ] Hantera tomt input fält som ger "." värde - ska ej gå att inmata
+- [x] Frontend: Hantera input firstName från request är "" - la till required som HTML-attribut
+- [ ] Backend: Checka så att request body properties inte är whitespace eller null
 
 ---
 
@@ -176,6 +179,33 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Deployade till GitHub Pages och stötte på error: `Blocked loading mixed active content “http://func-uppgift1.azurewebsites.net/api/RegisterVisitor”` vilket jag löste genom att ändra min Function App URL från http till https.
 - Nästa steg är att se om jag kan fixa CORS - i min Function App hittade jag "CORS" under API-fliken och la till min origin: https://www.ludwigstenberg.github.io
 - Lyckades inte få det att fungera med CORS med min specifika origin. Istället skickade jag in '\*' som en tillfällig lösning för att tillåta ALLT.
+
+- La till en del basic css för sidan och det verkar som att GitHub Pages märker av och uppdaterar om man gör en push till sitt repository. Neat.
+
+- Funderar över felhantering: Vilka failures skulle kunna ske i min function?
+
+1. Felaktig request body / firstName
+2. Databas / connection error
+
+- Märkte att jag kan ta bort `if newVisitor == null och dess return status` eftersom databasen hade throwat SqlException iom constraints.
+
+- Har issues när jag försöker skicka en valid request och får 500 tillbaka. Lägger till loggning och ser om jag kan hitta var problemet uppstår.
+
+- La till loggning och felhantering för om en connection string är invalid eller inte hittas. Detta är dock förmodligen inte det som skapar problemet.
+
+- Hittade mitt problem. Min loggning kom fram till att anslutningen försökte öppnas men den gav aldrig ett success-meddelande. Vilket fick mig att inse att min IP inte var tillåten. Att lägga till den fixade problemet. Behöver en lösning på detta.
+
+- La till loggning för nästan varje steg i min azure function. > Deployade för att testa i cloudet.
+
+- Blev sugen på att lägga till LastName och EmailAddress också vilket kommer innebära:
+- [x] Ändra i SQL Database schema (ALTER TABLE, ADD..)
+- [x] Lägga till i ModelVisitor
+- [x] Uppdatera API
+- [x] Lägga till ytterligare ett input field i HTML
+- [x] Lägga till funktionalitet via JavaScript
+
+- Blev sugen på att sätta en timer funktionalitet på mitt responseMessage när en användare registrerar. Jag tänker pga nån slags privacy. https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout
+- använde mig av inline-css på elementet: .style.display = "none";
 
 ### Mina resurser:
 

@@ -6,12 +6,20 @@ form.addEventListener("submit", async (event) => {
   console.log("Form submitted");
 
   const formData = new FormData(form);
-  const firstName = formData.get("firstName");
-  console.log("First name:", firstName);
-  registerVisit(firstName);
+  const firstName = formData.get("firstname");
+  const lastName = formData.get("lastname");
+  const emailAddress = formData.get("email");
+  console.log(
+    `First name: ${firstName}, Last name: ${lastName}, Email: ${emailAddress}`
+  );
+  registerVisit(firstName, lastName, emailAddress);
+
+  document.getElementById("input-firstname").value = "";
+  document.getElementById("input-lastname").value = "";
+  document.getElementById("input-email").value = "";
 });
 
-async function registerVisit(firstName) {
+async function registerVisit(firstName, lastName, emailAddress) {
   const localUrl = "http://localhost:7071/api/RegisterVisitor";
   const publicUrl =
     "https://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
@@ -19,7 +27,11 @@ async function registerVisit(firstName) {
   try {
     const response = await fetch(publicUrl, {
       method: "POST",
-      body: JSON.stringify({ firstName: firstName }),
+      body: JSON.stringify({
+        firstName: firstName,
+        lastName: lastName,
+        emailAddress: emailAddress,
+      }),
       headers: {
         "Content-Type": "application/json",
       },
@@ -31,13 +43,12 @@ async function registerVisit(firstName) {
 
     const result = await response.json();
     console.log(result);
-    console.log(result.timestamp);
 
     const utcTimestamp = result.timestamp + "Z";
     const localDate = new Date(utcTimestamp);
 
-    responseMessage.innerText = `Welcome, ${
-      result.firstName
+    responseMessage.innerText = `Welcome, ${result.firstName} ${
+      result.lastName
     }.\nYou checked in at: ${localDate.toLocaleString(undefined, {
       year: "numeric",
       month: "short",
@@ -45,6 +56,9 @@ async function registerVisit(firstName) {
       hour: "numeric",
       minute: "2-digit",
     })}`;
+    setTimeout(() => {
+      document.getElementById("response-message").style.display = "none";
+    }, 7000);
   } catch (error) {
     console.error(error.message);
     responseMessage.innerText = `There was an error registering your visit. Please try again.`;

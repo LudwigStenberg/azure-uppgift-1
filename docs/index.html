@@ -6,20 +6,60 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+
     <div id="registration-page">
       <h1>Please register your visit!</h1>
+
       <div id="form-container">
       <form id="registration-form">
-        <label for="firstName"></label><br />
+        <div id="firstname-container">
+        <label for="firstname">First name:</label>
         <input
           type="text"
-          id="firstName"
-          name="firstName"
-          placeholder="Enter your first name"
-        /><br />
-        <label for="firstName"></label>
+          id="input-firstname"
+          name="firstname"
+          placeholder="Enter first name"
+          minlength="3"
+          maxLength="30"
+          required
+        />
+        </div>
+
+        <div id="lastname-container">
+        <label for="lastname"></label>
+              <form id="registration-form">
+        <label for="lastname">Last name:</label>
+        <input
+          type="text"
+          id="input-lastname"
+          name="lastname"
+          placeholder="Enter last name"
+          minlength="3"
+          maxLength="30"
+          required
+        />
+        </div>
+
+        <div id="email-container">
+        <label for="email"></label>
+              <form id="registration-form">
+        <label for="email">Email:</label>
+        <input
+          type="email"
+          id="input-email"
+          name="email"
+          placeholder="Enter email address"
+          minlength="5"
+          maxLength="320"
+          required
+        />
+        </div>
+        
+        <input type="reset" id="button">
         <button type="submit" id="button">Submit</button>
       </form>
+
+      
       <div>
       <div id="response-message"></div>
     </div>
