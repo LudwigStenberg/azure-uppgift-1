@@ -29,7 +29,7 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [x] Testa databasanslutning lokalt (via local.settings.json?)
 - [x] Spara requests/besökare till databasen
 - [x] Returnera nödvändig info till klienten
-- [ ] Lägg till nödvändig loggning
+- [x] Lägg till nödvändig loggning
 
 #### Frontend (HTML/CSS/JS)
 
@@ -42,11 +42,7 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [x] Skapa Azure Functions på Azure och deploya.
 - [x] Skapa Static Web App på Azure och deploya (GitHub-pages)
 - [ ] Testa och utforska Application Insights loggning och eventuella inställningar(?)
-- [ ] Testa det fullständiga systemet
-
-#### Loggning
-
-- [ ] Lägga in loggning där det passar in.
+- [ ] Testa det fullständiga systemet - lokalt och public
 
 #### Extra
 
@@ -55,6 +51,8 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [ ] Hantera tomt input fält som ger "." värde - ska ej gå att inmata
 - [x] Frontend: Hantera input firstName från request är "" - la till required som HTML-attribut
 - [ ] Backend: Checka så att request body properties inte är whitespace eller null
+- [ ] Loggas databasens händelser via Application Insights elelr snappar AI endast upp från kodbasen?
+- [ ] Byt från Secrets/SQL Authentication till Managed Identity /+ Entra ID?
 
 ---
 
@@ -206,6 +204,37 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 
 - Blev sugen på att sätta en timer funktionalitet på mitt responseMessage när en användare registrerar. Jag tänker pga nån slags privacy. https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout
 - använde mig av inline-css på elementet: .style.display = "none";
+
+#### JSON Parse --> Model Binding
+
+- Jag tycker inte om hur jag behöver parsa/deserialsera med JSON-metoder och är nyfiken om det går att använda ModelBinding i en Azure Function som det exempelvis går i ett MVC-pattern i en Controller.
+- Läsning: https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook-trigger?tabs=python-v2%2Cisolated-process%2Cnodejs-v4%2Cfunctionsv2&pivots=programming-language-csharp#payload
+- https://stackoverflow.com/questions/44660314/how-can-i-do-modelbinding-with-httptrigger-in-azure-functions
+- Det ser ut att fungera så jag la till min VisitorModel some en parameter för att testa. Först gick det inte men jag insåg att jag missat använda rätt using som länken visar.
+- Så det fungerar, och jag behöver därmed inte använda mig av någon JSON-converter.
+- Jag har kommit fram till att jag nog vill lägga till en VisitorInputModel så att jag inte exponerar min domän-modell som en parameter. Den innehåller dessutom 'Id' och 'Timestamp' som jag inte tar emot via request. Därmed la jag enbart till 'FirstName', 'LastName' och 'EmailAddress'i min VisitorInputModel.
+
+#### Model Validation
+
+- Jag vill validera så att min VisitorInputModel och i vanliga fall är jag inte särskilt förtjust i att använda validation attributes pga att det gör att klassen blir rörig. Men eftersom jag använder mig av en InputModel och inte min domän-modell tror jag det blir okej (förutsatt att det faktiskt går att använda validation attributes inom detta system, vilket det bör)
+- Kom fram till att det INTE går att använda sig av Data Annotations med Validation Attributes inom en Azure Function och man behöver alltså skapa sin egen validation logic. Så det är vad jag tänker göra, och då kanske VisitorInputModel blir lite onödig i mitt fall. Så jag tar bort den igen.
+- Kommit fram till att jag ska göra min egna helper för att validera modellen och då behöver jag:
+- [ ] IsNullOrWhitespace (hanterar required och saknad av värde)
+- [ ] Max/Min-length (hanterar längd-constraints)
+- [ ] Email-validation (Kan använda mig av Microsofts inbyggda)
+
+- Hittade en ännu bättre lösning som jag körde på:
+  https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations.validator?view=net-9.0
+- Att använda mig av Validator-klassen för att validera Data Annotations! Vilket innebär att jag faktiskt kan köra på validation attributes i modellen, nice.
+- Validator.TryValidateObject tar in parameters: object, context, validationResults, boolean:
+  object: är det objektet med data som vi vill validera
+  context: är själva validerings-informationen (dvs attributerna) för vårt objekt vilket finns i modellen
+  validationResults är en lista där våra resultat lagras som errors
+  boolean: true/false har att göra med om vi vill validera alla properties eller om vi vill sluta om vi når first failure.
+- La till default assignment av = DateTime.UtcNow för Timestamp i modellen
+- Detta innebär att den initialiseras vid model binding och jag får en mer exakt tid än om datumet skulle skapats i databasen by default.
+- La till 'Timestamp' i INSERT-operationen också.
+- Tog bort JsonException nu när jag inte använder mig av JsonParse
 
 ### Mina resurser:
 
