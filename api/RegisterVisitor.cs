@@ -1,10 +1,10 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using FromBodyAttribute = Microsoft.Azure.Functions.Worker.Http.FromBodyAttribute;
 
 namespace VisitorRegistration;
 
@@ -18,25 +18,25 @@ public class RegisterVisitor
     }
 
     [Function("RegisterVisitor")]
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, [FromBody] VisitorModel visitor)
     {
         logger.LogInformation("Function started...");
 
+        var context = new ValidationContext(visitor);
+        var results = new List<ValidationResult>();
+
+        if (!Validator.TryValidateObject(visitor, context, results, true))
+        {
+            logger.LogInformation("ValidationResults: {Results}", results);
+            return new BadRequestObjectResult(results);
+        }
+
         try
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-
-            if (string.IsNullOrWhiteSpace(requestBody))
-            {
-                logger.LogWarning("The body is null or missing in the request.");
-                return new BadRequestObjectResult(new { error = "Request body cannot be empty." });
-            }
-            logger.LogInformation($"Request Body: {requestBody}");
-
-            JsonNode? node = JsonNode.Parse(requestBody);
-            string? firstName = node?["firstName"]?.ToString();
-            string? lastName = node?["lastName"]?.ToString();
-            string? emailAddress = node?["emailAddress"]?.ToString();
+            string firstName = visitor.FirstName;
+            string lastName = visitor.LastName;
+            string emailAddress = visitor.EmailAddress;
+            DateTime timestamp = visitor.Timestamp;
 
             logger.LogInformation("Retrieving connection string...");
             var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
@@ -51,9 +51,9 @@ public class RegisterVisitor
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                string query = @"INSERT INTO Visitors (FirstName, LastName, EmailAddress) 
+                string query = @"INSERT INTO Visitors (FirstName, LastName, EmailAddress, Timestamp) 
                                  OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.EmailAddress, INSERTED.Timestamp 
-                                 VALUES (@firstName, @lastName, @emailAddress)";
+                                 VALUES (@firstName, @lastName, @emailAddress, @timestamp)";
 
                 logger.LogInformation("Opening connection...");
                 await connection.OpenAsync();
@@ -64,6 +64,7 @@ public class RegisterVisitor
                 command.Parameters.AddWithValue("@firstName", firstName);
                 command.Parameters.AddWithValue("@lastName", lastName);
                 command.Parameters.AddWithValue("@emailAddress", emailAddress);
+                command.Parameters.AddWithValue("@timestamp", timestamp);
 
                 logger.LogInformation("Attempting to read and execute SQL query.");
                 using (var reader = await command.ExecuteReaderAsync())
@@ -84,11 +85,6 @@ public class RegisterVisitor
                      newVisitor!.Id, newVisitor.FirstName, newVisitor.LastName, newVisitor.EmailAddress, newVisitor.Timestamp);
                 return new OkObjectResult(newVisitor);
             }
-        }
-        catch (JsonException)
-        {
-            logger.LogError("Failed parsing of JSON.");
-            return new BadRequestResult();
         }
         catch (Exception ex)
         {
