@@ -53,6 +53,7 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [ ] Backend: Checka så att request body properties inte är whitespace eller null
 - [ ] Loggas databasens händelser via Application Insights elelr snappar AI endast upp från kodbasen?
 - [ ] Byt från Secrets/SQL Authentication till Managed Identity /+ Entra ID?
+- [ ] Byta namn från 'Timestamp' (property) till nåt annat?
 
 ---
 
@@ -235,6 +236,12 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Detta innebär att den initialiseras vid model binding och jag får en mer exakt tid än om datumet skulle skapats i databasen by default.
 - La till 'Timestamp' i INSERT-operationen också.
 - Tog bort JsonException nu när jag inte använder mig av JsonParse
+
+#### HTML/CSS Fix & Trix
+
+- Fick sug på att lägga ner lite tid på CSS så gav hela sidan en liten makeover.
+- Testade lära mig lite om hur ::before fungerade och det är ett smidigt sätt att inte behöva skapa ett element för att lägga till lite extra design.
+- Upptäckte även ett problem där det andra meddelandet inte dök upp efter att det första försvinner efter setTimeout. Jag kom på att jag behöver ju återställa värdet på mitt responseMessage varje gång a la ""; så det gjorde jag, plus att jag satte tillbaka style.display från "none" till "block".
 
 ### Mina resurser:
 
