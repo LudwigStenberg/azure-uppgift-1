@@ -21,6 +21,7 @@ public class RegisterVisitor
     public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, [FromBody] VisitorModel visitor)
     {
         logger.LogInformation("Function started...");
+        logger.LogInformation("HttpRequest received: {HttpRequest}", req.Method);
 
         var context = new ValidationContext(visitor);
         var results = new List<ValidationResult>();
@@ -36,7 +37,7 @@ public class RegisterVisitor
             string firstName = visitor.FirstName;
             string lastName = visitor.LastName;
             string emailAddress = visitor.EmailAddress;
-            DateTime timestamp = visitor.Timestamp;
+            DateTime checkInTime = visitor.CheckInTime;
 
             logger.LogInformation("Retrieving connection string...");
             var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
@@ -47,13 +48,13 @@ public class RegisterVisitor
             }
             logger.LogInformation("Successfully retrieved connection string, connecting to database...");
 
-            VisitorModel? newVisitor = null;
+            VisitorModel? visitorResponse = null;
 
             await using (var connection = new SqlConnection(connectionString))
             {
-                string query = @"INSERT INTO Visitors (FirstName, LastName, EmailAddress, Timestamp) 
-                                 OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.EmailAddress, INSERTED.Timestamp 
-                                 VALUES (@firstName, @lastName, @emailAddress, @timestamp)";
+                string query = @"INSERT INTO Visitors (FirstName, LastName, EmailAddress, CheckInTime) 
+                                 OUTPUT INSERTED.Id, INSERTED.FirstName, INSERTED.LastName, INSERTED.EmailAddress, INSERTED.CheckInTime 
+                                 VALUES (@firstName, @lastName, @emailAddress, @checkInTime)";
 
                 logger.LogInformation("Opening connection...");
                 await connection.OpenAsync();
@@ -64,26 +65,26 @@ public class RegisterVisitor
                 command.Parameters.AddWithValue("@firstName", firstName);
                 command.Parameters.AddWithValue("@lastName", lastName);
                 command.Parameters.AddWithValue("@emailAddress", emailAddress);
-                command.Parameters.AddWithValue("@timestamp", timestamp);
+                command.Parameters.AddWithValue("@checkInTime", checkInTime);
 
                 logger.LogInformation("Attempting to read and execute SQL query.");
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     if (await reader.ReadAsync())
                     {
-                        newVisitor = new VisitorModel
+                        visitorResponse = new VisitorModel
                         {
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                             LastName = reader.GetString(reader.GetOrdinal("LastName")),
                             EmailAddress = reader.GetString(reader.GetOrdinal("EmailAddress")),
-                            Timestamp = reader.GetDateTime(reader.GetOrdinal("Timestamp"))
+                            CheckInTime = reader.GetDateTime(reader.GetOrdinal("CheckInTime"))
                         };
                     }
                 }
-                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}', LastName: {LatName}, EmailAddress: '{EmailAddress}' and Timestamp: {Timestamp}",
-                     newVisitor!.Id, newVisitor.FirstName, newVisitor.LastName, newVisitor.EmailAddress, newVisitor.Timestamp);
-                return new OkObjectResult(newVisitor);
+                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}', LastName: {LatName}, EmailAddress: '{EmailAddress}' and CheckInTime: {CheckInTime}",
+                     visitorResponse!.Id, visitorResponse.FirstName, visitorResponse.LastName, visitorResponse.EmailAddress, visitorResponse.CheckInTime);
+                return new OkObjectResult(visitorResponse);
             }
         }
         catch (Exception ex)

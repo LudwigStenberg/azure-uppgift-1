@@ -28,7 +28,7 @@ async function registerVisit(firstName, lastName, emailAddress) {
     "https://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
 
   try {
-    const response = await fetch(publicUrl, {
+    const response = await fetch(localUrl, {
       method: "POST",
       body: JSON.stringify({
         firstName: firstName,

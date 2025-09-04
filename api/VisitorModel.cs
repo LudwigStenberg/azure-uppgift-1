@@ -15,5 +15,6 @@ public class VisitorModel
     [Required]
     [EmailAddress(ErrorMessage = "EmailAddress must have a valid format.")]
     public required string EmailAddress { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+    public DateTime CheckInTime { get; set; } = DateTime.UtcNow;
 }

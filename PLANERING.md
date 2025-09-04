@@ -46,14 +46,17 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 #### Extra
 
-- [ ] Lösa hur jag hanterar access till min SQL Databas med en dynamisk IP
-- [ ] Komma på hur jag kan tillåta CORS mellan min Function App och github pages
-- [ ] Hantera tomt input fält som ger "." värde - ska ej gå att inmata
+- [x] Lösa hur jag hanterar access till min SQL Databas med en dynamisk IP - Kör på Firewall rules.
+- [ ] Komma på hur jag kan tillåta CORS mellan min Function App och github pages och inte använda asterisk
+- [x] Hantera tomt input fält som ger "." värde - ska ej gå att inmata
 - [x] Frontend: Hantera input firstName från request är "" - la till required som HTML-attribut
-- [ ] Backend: Checka så att request body properties inte är whitespace eller null
+- [x] Backend: Checka så att request body properties inte är whitespace eller null
 - [ ] Loggas databasens händelser via Application Insights elelr snappar AI endast upp från kodbasen?
-- [ ] Byt från Secrets/SQL Authentication till Managed Identity /+ Entra ID?
-- [ ] Byta namn från 'Timestamp' (property) till nåt annat?
+- [x] Byt från Secrets/SQL Authentication till Managed Identity /+ Entra ID?
+- [x] Byta namn från 'Timestamp' (property) till nåt annat? --> CheckInTime
+- [x] Byta från SQL Authentication/Secrets till Managed Identity för Azure Functions/SQL-Server
+- [x] Kolla om jag ens behöver HttpRequest req i function-parametern nu när jag kör "[FromBody]"- inte i mitt fall. Kan vara bra om man vill ha information ut från den (objektet har väldigt mycket) men i mitt fall behöver jag inte det.
+- [ ]
 
 ---
 
@@ -220,9 +223,9 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Jag vill validera så att min VisitorInputModel och i vanliga fall är jag inte särskilt förtjust i att använda validation attributes pga att det gör att klassen blir rörig. Men eftersom jag använder mig av en InputModel och inte min domän-modell tror jag det blir okej (förutsatt att det faktiskt går att använda validation attributes inom detta system, vilket det bör)
 - Kom fram till att det INTE går att använda sig av Data Annotations med Validation Attributes inom en Azure Function och man behöver alltså skapa sin egen validation logic. Så det är vad jag tänker göra, och då kanske VisitorInputModel blir lite onödig i mitt fall. Så jag tar bort den igen.
 - Kommit fram till att jag ska göra min egna helper för att validera modellen och då behöver jag:
-- [ ] IsNullOrWhitespace (hanterar required och saknad av värde)
-- [ ] Max/Min-length (hanterar längd-constraints)
-- [ ] Email-validation (Kan använda mig av Microsofts inbyggda)
+  IsNullOrWhitespace (hanterar required och saknad av värde)
+  Max/Min-length (hanterar längd-constraints)
+  Email-validation (Kan använda mig av Microsofts inbyggda)
 
 - Hittade en ännu bättre lösning som jag körde på:
   https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations.validator?view=net-9.0
@@ -242,6 +245,26 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Fick sug på att lägga ner lite tid på CSS så gav hela sidan en liten makeover.
 - Testade lära mig lite om hur ::before fungerade och det är ett smidigt sätt att inte behöva skapa ett element för att lägga till lite extra design.
 - Upptäckte även ett problem där det andra meddelandet inte dök upp efter att det första försvinner efter setTimeout. Jag kom på att jag behöver ju återställa värdet på mitt responseMessage varje gång a la ""; så det gjorde jag, plus att jag satte tillbaka style.display från "none" till "block".
+
+#### Byta från SQL Authentication --> Managed Identity
+
+- Function App > System Assigned > ON
+- SQL-server > Microsoft Entra ID > Set Admin > mig själv
+- Lägga till en user för function app (external provider) i databasen med permissions. db_datareader och db_datawriter.
+- Eftersom jag nu kör Managed Identity använder jag en annan connection string utan user och password. Eftersom vi har satt admin till oss själva förstår azure detta, men när vi kör lokalt behöver vi på nåt sätt autentisera vilket vi gör genom att vara inloggade på azure från vår lokala miljö eg VSC / CLI.
+- Eftersom mitt azure-konto har admin-roll på SQL-servern så har den full permission att utföra databas-operationer.
+- Uppdaterat SqlConnectionString i både local.settings.json och Env variables i Function App: Authentication=Active Directory Default.
+- Att skifta från SQL Authentication och att gå på min Identity istället innebär att jag inte behöver sätta upp nya firewalls så fort min IP-address ändras och jag inte kommer åt servern.
+- Man kan ha kvar SQL Authentication om man vill men jag tar bort det:
+  Enabled Microsoft Entra-only authentication för servern i settings > Entra ID.
+  Att ta bort SQL Authentication innebär ju att jag reducerar min attack-yta och jag kommer ändå inte använda SQL Auth så det är en onödig "risk".
+
+#### Byta från 'Timestamp' till 'CheckInTime'
+
+- Ändrade VisitorModel property 'Timestamp' till 'CheckInTime'
+- Ersatte alla 'Timestamp' i RegisterVisitor (function) med 'CheckInTime'
+- Ändrade från newVisitor till visitorResponse för jag tycker det är tydligare
+- Döpte om min column med: EXEC sp_rename 'Visitors.Timestamp', 'CheckInTime', 'COLUMN';
 
 ### Mina resurser:
 
