@@ -4,7 +4,7 @@ A cloud-based visitor registration system built with Azure services that allows 
 
 ## Description
 
-This project is an educational assignment with the goal of demonstrating how different Azure cloud services work together to create a complete application. The idea is that Users can fill in their name and contact information on a webpage, which gets processed by a backend API (Azure Function) and stored in a database.
+This project is an educational assignment with the goal of demonstrating how different Azure cloud services work together to create a complete application. The idea is that Users can fill in their name and contact information on a webpage, which gets processed by a backend API (Azure Function) and stored in a database (Azure SQL Database).
 
 ## Getting Started
 
@@ -18,7 +18,8 @@ This project is an educational assignment with the goal of demonstrating how dif
 
 The system consists of four main components:
 
-- **Frontend**: GitHub Pages (HTML/CSS/JavaScript) I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
+- **Frontend**: GitHub Pages (HTML/CSS/JavaScript)
+     - I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
 - **Backend**: Azure Functions of type HTTP trigger for processing requests
 - **Database**: Azure SQL Database for storing visitor data
 - **Server**: Azure SQL Server (logical) for managing the database
