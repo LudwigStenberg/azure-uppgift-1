@@ -30,7 +30,7 @@ The system consists of four main components:
 1. Clone the repository
 
    ```
-   git clone https://github.com/yourusername/azure-visitor-registration.git
+   git clone https://github.com/ludwigstenberg/azure-visitor-registration.git
    ```
 
 2. Navigate to the API directory
