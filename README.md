@@ -96,7 +96,7 @@ Create a `local.settings.json` file in the api folder:
 
 ### Testing the API:
 
-You can test the RegisterVisitor endpoint using the Bruno HTTP client files in `/api/Bruno/`.
+You can test the RegisterVisitor endpoint using the Bruno files in `/api/Bruno/`.
 To install Bruno: https://www.usebruno.com/downloads
 
 ## Authors
