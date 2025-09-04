@@ -22,7 +22,7 @@ The system consists of four main components:
      - I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
 - **Backend**: Azure Functions of type HTTP trigger for processing requests
 - **Database**: Azure SQL Database for storing visitor data
-- **Server**: Azure SQL Server (logical) for managing the database
+     -  Also an Azure SQL Server (logical) for managing the database
 - **Logging**: Application Insights for monitoring and logging
 
 ### Installing
