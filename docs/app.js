@@ -28,7 +28,7 @@ async function registerVisit(firstName, lastName, emailAddress) {
     "https://func-uppgift1.azurewebsites.net/api/RegisterVisitor";
 
   try {
-    const response = await fetch(localUrl, {
+    const response = await fetch(publicUrl, {
       method: "POST",
       body: JSON.stringify({
         firstName: firstName,
@@ -47,8 +47,8 @@ async function registerVisit(firstName, lastName, emailAddress) {
     const result = await response.json();
     console.log(result);
 
-    const utcTimestamp = result.timestamp + "Z";
-    const localDate = new Date(utcTimestamp);
+    const utcCheckInTime = result.checkInTime + "Z";
+    const localDate = new Date(utcCheckInTime);
 
     responseMessage.innerText = `Welcome, ${result.firstName} ${
       result.lastName
