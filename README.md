@@ -74,7 +74,7 @@ Create a `local.settings.json` file in the api folder:
    func start
    ```
 
-2. Open `docs/index.html` in a browser or with a tool such as Live Server.
+2. Open `docs/index.html` in a browser or with a tool such as the 'Live Server' extension.
 
 3. Update the `localUrl` in `app.js` if your function runs on a different port
 
