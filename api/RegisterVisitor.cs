@@ -34,9 +34,9 @@ public class RegisterVisitor
 
         try
         {
-            string firstName = visitor.FirstName;
-            string lastName = visitor.LastName;
-            string emailAddress = visitor.EmailAddress;
+            string firstName = visitor.FirstName.ToLower();
+            string lastName = visitor.LastName.ToLower();
+            string emailAddress = visitor.EmailAddress.ToLower();
             DateTime checkInTime = visitor.CheckInTime;
 
             logger.LogInformation("Retrieving connection string...");
