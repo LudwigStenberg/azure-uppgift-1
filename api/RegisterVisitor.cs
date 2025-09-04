@@ -18,10 +18,10 @@ public class RegisterVisitor
     }
 
     [Function("RegisterVisitor")]
-    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, [FromBody] VisitorModel visitor)
+    public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req, [FromBody] VisitorRequest visitor)
     {
         logger.LogInformation("Function started...");
-        logger.LogInformation("HttpRequest received: {HttpRequest}", req.Method);
+        logger.LogInformation("HttpRequest received... Host: {Host}", req.Host);
 
         var context = new ValidationContext(visitor);
         var results = new List<ValidationResult>();
@@ -37,7 +37,7 @@ public class RegisterVisitor
             string firstName = visitor.FirstName.ToLower();
             string lastName = visitor.LastName.ToLower();
             string emailAddress = visitor.EmailAddress.ToLower();
-            DateTime checkInTime = visitor.CheckInTime;
+            DateTime checkInTime = DateTime.UtcNow;
 
             logger.LogInformation("Retrieving connection string...");
             var connectionString = Environment.GetEnvironmentVariable("SqlConnectionString");
@@ -82,7 +82,7 @@ public class RegisterVisitor
                         };
                     }
                 }
-                logger.LogInformation("Successfully created visitor with ID: '{Id}', FirstName: '{FirstName}', LastName: {LatName}, EmailAddress: '{EmailAddress}' and CheckInTime: {CheckInTime}",
+                logger.LogInformation("Successfully created visitor:\nID: '{Id}'\nFirstName: '{FirstName}'\nLastName: {LatName}\nEmailAddress: '{EmailAddress}'\nCheckInTime: {CheckInTime}",
                      visitorResponse!.Id, visitorResponse.FirstName, visitorResponse.LastName, visitorResponse.EmailAddress, visitorResponse.CheckInTime);
                 return new OkObjectResult(visitorResponse);
             }

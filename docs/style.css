@@ -69,7 +69,6 @@ form .input-box span.info {
   padding-left: 0.5rem;
   border: 1px solid #ccc;
   border-bottom-width: 2px;
-  transition: all 0.3s ease;
 }
 
 .user-info .input-box input:focus,
@@ -92,7 +91,6 @@ form .button input {
   font-weight: 400;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s ease;
   background: linear-gradient(900deg, #71b7e6, #334048);
 }
 

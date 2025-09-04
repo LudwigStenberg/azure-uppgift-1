@@ -56,7 +56,6 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 - [x] Byta namn från 'Timestamp' (property) till nåt annat? --> CheckInTime
 - [x] Byta från SQL Authentication/Secrets till Managed Identity för Azure Functions/SQL-Server
 - [x] Kolla om jag ens behöver HttpRequest req i function-parametern nu när jag kör "[FromBody]"- inte i mitt fall. Kan vara bra om man vill ha information ut från den (objektet har väldigt mycket) men i mitt fall behöver jag inte det.
-- [ ]
 
 ---
 
@@ -265,6 +264,10 @@ Fick inte .Deserialize att fungera som jag ville och eftersom jag bara hade en p
 - Ersatte alla 'Timestamp' i RegisterVisitor (function) med 'CheckInTime'
 - Ändrade från newVisitor till visitorResponse för jag tycker det är tydligare
 - Döpte om min column med: EXEC sp_rename 'Visitors.Timestamp', 'CheckInTime', 'COLUMN';
+
+#### Skapade en VisitorRequest modell
+
+- Jag anser att det är onödigt att exponera domän-modellen VisitorModel i endpointen. Detta eftersom den innehåller Id och CheckInTime, vilket jag inte ens behöver från frontend. Det skulle kunna innebära att requests hade kunnat mata in data i dessa nycklarna via JSON. Och om vi skulle lägga till känslig information i domänmodellen hade det varit illa att visa det också. Därmed kör jag på ett DTO som bara innehåller det som behövs och som vi också kan lägga till properties som inte är relaterade till domän-modellen, om vi vill. Ytterligare, jag flyttade över data annotations till DTO:n. Och initierar ett DateTime.UtcNow; i backend.
 
 ### Mina resurser:
 
