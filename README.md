@@ -98,6 +98,10 @@ Create a `local.settings.json` file in the api folder:
 You can test the RegisterVisitor endpoint using the Bruno files in `/api/Bruno/`.
 To install Bruno: https://www.usebruno.com/downloads
 
+## License
+
+Distributed under the MIT-license. See LICENSE.txt for more information.
+
 ## Authors
 
 Ludwig Stenberg
@@ -109,6 +113,8 @@ lludwigstenberg@gmail.com
 - Azure Functions tutorials
 - Tim Corey: https://www.youtube.com/@IAmTimCorey
 - Adam Marczak - Azure for Everyone: https://www.youtube.com/@AdamMarczakYT
+
+
 
 ###
 
