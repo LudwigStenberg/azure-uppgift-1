@@ -19,10 +19,10 @@ This project is an educational assignment with the goal of demonstrating how dif
 The system consists of five main components:
 
 - **Frontend**: GitHub Pages (HTML/CSS/JavaScript)
-     - I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
+  - I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
 - **Backend**: Azure Functions of type HTTP trigger for processing requests
 - **Database**: Azure SQL Database for storing visitor data
-     -  Also an Azure SQL Server (logical) for managing the database
+  - Also an Azure SQL Server (logical) for managing the database
 - **Logging**: Application Insights for monitoring and logging
 
 ### Installing
@@ -111,4 +111,6 @@ lludwigstenberg@gmail.com
 - Tim Corey: https://www.youtube.com/@IAmTimCorey
 - Adam Marczak - Azure for Everyone: https://www.youtube.com/@AdamMarczakYT
 
-This README was formatted by AI
+###
+
+This README was formatted with the help of AI

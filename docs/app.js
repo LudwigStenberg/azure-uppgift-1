@@ -68,8 +68,8 @@ async function registerVisit(firstName, lastName, emailAddress) {
     console.error(error.message);
     responseMessage.innerText = `There was an error registering your visit. Please try again.`;
   }
+}
 
-  function capitalize(str) {
-    return String(str[0]).toUpperCase() + String(str).slice(1);
-  }
+function capitalize(str) {
+  return String(str[0]).toUpperCase() + String(str).slice(1);
 }
