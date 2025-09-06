@@ -50,9 +50,11 @@ async function registerVisit(firstName, lastName, emailAddress) {
     const utcCheckInTime = result.checkInTime + "Z";
     const localDate = new Date(utcCheckInTime);
 
-    responseMessage.innerText = `Welcome, ${result.firstName} ${
+    responseMessage.innerText = `Welcome, ${capitalize(
+      result.firstName
+    )} ${capitalize(
       result.lastName
-    }.\nYou checked in at: ${localDate.toLocaleString(undefined, {
+    )}.\nYou checked in at: ${localDate.toLocaleString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -65,5 +67,9 @@ async function registerVisit(firstName, lastName, emailAddress) {
   } catch (error) {
     console.error(error.message);
     responseMessage.innerText = `There was an error registering your visit. Please try again.`;
+  }
+
+  function capitalize(str) {
+    return String(str[0]).toUpperCase() + String(str).slice(1);
   }
 }
