@@ -110,3 +110,5 @@ lludwigstenberg@gmail.com
 - Azure Functions tutorials
 - Tim Corey: https://www.youtube.com/@IAmTimCorey
 - Adam Marczak - Azure for Everyone: https://www.youtube.com/@AdamMarczakYT
+
+This README was formatted by AI
