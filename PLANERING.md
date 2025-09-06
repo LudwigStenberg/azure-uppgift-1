@@ -41,7 +41,7 @@ Mitt fokus ligger till en början på local development och få den biten att fu
 
 - [x] Skapa Azure Functions på Azure och deploya.
 - [x] Skapa Static Web App på Azure och deploya (GitHub-pages)
-- [ ] Testa och utforska Application Insights loggning och eventuella inställningar(?)
+- [x] Testa och utforska Application Insights loggning och eventuella inställningar()
 - [ ] Testa det fullständiga systemet - lokalt och public
 
 #### Extra

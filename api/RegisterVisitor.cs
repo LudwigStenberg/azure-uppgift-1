@@ -67,7 +67,7 @@ public class RegisterVisitor
                 command.Parameters.AddWithValue("@emailAddress", emailAddress);
                 command.Parameters.AddWithValue("@checkInTime", checkInTime);
 
-                logger.LogInformation("Attempting to read and execute SQL query.");
+                logger.LogInformation("Attempting to read and execute SQL query...");
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     if (await reader.ReadAsync())

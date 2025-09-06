@@ -16,7 +16,7 @@ This project is an educational assignment with the goal of demonstrating how dif
 
 ### Architecture
 
-The system consists of four main components:
+The system consists of five main components:
 
 - **Frontend**: GitHub Pages (HTML/CSS/JavaScript) I was not able to create an Azure Static Web App on my student subscription so GitHub Pages was used.
 - **Backend**: Azure Functions of type HTTP trigger for processing requests
