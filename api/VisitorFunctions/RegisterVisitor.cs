@@ -93,7 +93,7 @@ public class RegisterVisitor
                 try
                 {
 
-                    // Create our notification model which represents our data message
+                    // Create notification model -- this represents our data message
                     var notification = new BookingNotification
                     {
                         BookingId = visitorResponse.Id,  // Using visitor ID as booking ID for now
@@ -102,7 +102,7 @@ public class RegisterVisitor
                         LastName = visitorResponse.LastName,
                         EventType = "CheckedIn",
                         Timestamp = DateTime.UtcNow,
-                        FacilityName = "Main Office", // Placeholder
+                        FacilityName = "Main Office", // Just a Placeholder
                         NumberOfParticipants = 1,
                         StartDate = visitorResponse.CheckInTime,
                         EndDate = visitorResponse.CheckInTime
@@ -118,7 +118,7 @@ public class RegisterVisitor
                 catch (Exception ex)
                 {
                     logger.LogWarning(
-                        ex, "Failed to send check-in notification for visitor {Id}", visitorResponse.Id);
+                        ex, "Failed to send check-in notification for visitor {Id}. Error: {Message}", visitorResponse.Id, ex);
                 }
 
                 return new OkObjectResult(visitorResponse);
