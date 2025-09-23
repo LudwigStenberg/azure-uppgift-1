@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using Azure.Messaging.ServiceBus;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -11,10 +13,12 @@ namespace VisitorRegistration;
 public class RegisterVisitor
 {
     private readonly ILogger<RegisterVisitor> logger;
+    private readonly ServiceBusClient serviceBusClient;
 
-    public RegisterVisitor(ILogger<RegisterVisitor> logger)
+    public RegisterVisitor(ILogger<RegisterVisitor> logger, ServiceBusClient serviceBusClient)
     {
         this.logger = logger;
+        this.serviceBusClient = serviceBusClient;
     }
 
     [Function("RegisterVisitor")]
@@ -84,6 +88,39 @@ public class RegisterVisitor
                 }
                 logger.LogInformation("Successfully created visitor:\nID: '{Id}'\nFirstName: '{FirstName}'\nLastName: {LatName}\nEmailAddress: '{EmailAddress}'\nCheckInTime: {CheckInTime}",
                      visitorResponse!.Id, visitorResponse.FirstName, visitorResponse.LastName, visitorResponse.EmailAddress, visitorResponse.CheckInTime);
+
+                // Service Bus -- this is just a test implementation.
+                try
+                {
+
+                    // Create our notification model which represents our data message
+                    var notification = new BookingNotification
+                    {
+                        BookingId = visitorResponse.Id,  // Using visitor ID as booking ID for now
+                        CustomerEmail = visitorResponse.EmailAddress,
+                        FirstName = visitorResponse.FirstName,
+                        LastName = visitorResponse.LastName,
+                        EventType = "CheckedIn",
+                        Timestamp = DateTime.UtcNow,
+                        FacilityName = "Main Office", // Placeholder
+                        NumberOfParticipants = 1,
+                        StartDate = visitorResponse.CheckInTime,
+                        EndDate = visitorResponse.CheckInTime
+                        // TotalPrice and BookingNotes are default/null
+                    };
+
+                    var sender = serviceBusClient.CreateSender("booking-notifications");
+                    var message = new ServiceBusMessage(JsonSerializer.Serialize(notification));
+                    await sender.SendMessageAsync(message);
+
+                    logger.LogInformation("Check-in notification sent for visitor {Id}", visitorResponse.Id);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(
+                        ex, "Failed to send check-in notification for visitor {Id}", visitorResponse.Id);
+                }
+
                 return new OkObjectResult(visitorResponse);
             }
         }
